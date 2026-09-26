@@ -4,6 +4,16 @@ Builds of [magpie](https://github.com/yetone/magpie). Pushing a `v*` tag
 there triggers the workflow here, which builds, signs, notarises and
 publishes the release.
 
+## Cypheria build
+
+The `v0.1.575-cypheria` tag builds
+[`cypheriaweb3/magpie@v0.1.575-cypheria`](https://github.com/cypheriaweb3/magpie/tree/v0.1.575-cypheria).
+It preserves the upstream workflow: a `repository_dispatch` release event
+builds and publishes, while a manual **Release** workflow run may publish or
+act as a build-only dry run. For this build, pass source ref
+`v0.1.575-cypheria` and version `0.1.575-cypheria`. The source repository is
+public, so checkout does not require `MAGPIE_DEPLOY_KEY`.
+
 Get it from [usemagpie.ai](https://usemagpie.ai) (`curl -fsSL https://usemagpie.ai/install.sh | sh`),
 or download the latest from [Releases](https://github.com/yetone/magpie-releases/releases/latest):
 
