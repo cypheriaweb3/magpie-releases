@@ -1,9 +1,8 @@
 name: Release
 
-# Builds, signs, notarises and publishes magpie. Pushing a v* tag on
-# yetone/magpie dispatches here, and the builds land on this repo's
-# Releases, where anyone can download them: the desktop app for macOS,
-# Windows and Linux, and the terminal-only build for every platform.
+# Builds, signs, notarises and publishes the Cypheria magpie build. A release
+# dispatch builds and publishes; a manual dispatch can publish or run as a
+# build-only dry run, matching the upstream workflow.
 #
 # macOS signing is optional: without MAC_CERTIFICATE_P12 the app is only
 # ad-hoc signed (still runs after right-click → Open). With it the app is
@@ -17,8 +16,8 @@ name: Release
 # platform before the release goes out: it must stay up and serve the
 # gateway.
 #
-# The source is checked out with MAGPIE_DEPLOY_KEY, a read-only deploy key
-# on yetone/magpie.
+# The source fork is public, so checkout does not require a cross-repository
+# deploy key.
 
 on:
   repository_dispatch:
@@ -26,7 +25,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Git ref of yetone/magpie to build (tag or branch)'
+        description: 'Git ref of cypheriaweb3/magpie to build (tag or branch)'
         required: true
         type: string
       version:
@@ -39,6 +38,7 @@ on:
         default: true
 
 env:
+  SOURCE_REPOSITORY: cypheriaweb3/magpie
   REF: ${{ github.event.client_payload.ref || github.event.inputs.ref }}
   VERSION: ${{ github.event.client_payload.version || github.event.inputs.version }}
 
@@ -58,8 +58,7 @@ jobs:
       - name: Checkout magpie source code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          repository: yetone/magpie
-          ssh-key: ${{ secrets.MAGPIE_DEPLOY_KEY }}
+          repository: ${{ env.SOURCE_REPOSITORY }}
           ref: ${{ env.REF }}
 
       - name: Setup Go
@@ -191,8 +190,7 @@ jobs:
       - name: Checkout magpie source code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          repository: yetone/magpie
-          ssh-key: ${{ secrets.MAGPIE_DEPLOY_KEY }}
+          repository: ${{ env.SOURCE_REPOSITORY }}
           ref: ${{ env.REF }}
 
       - name: Setup Go
@@ -271,8 +269,7 @@ jobs:
       - name: Checkout magpie source code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          repository: yetone/magpie
-          ssh-key: ${{ secrets.MAGPIE_DEPLOY_KEY }}
+          repository: ${{ env.SOURCE_REPOSITORY }}
           ref: ${{ env.REF }}
 
       - name: Setup Go
@@ -321,8 +318,7 @@ jobs:
       - name: Checkout magpie source code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          repository: yetone/magpie
-          ssh-key: ${{ secrets.MAGPIE_DEPLOY_KEY }}
+          repository: ${{ env.SOURCE_REPOSITORY }}
           ref: ${{ env.REF }}
           fetch-depth: 0
           fetch-tags: true
