@@ -381,6 +381,35 @@ jobs:
             echo "- **Linux:** \`magpie-linux-amd64\` / \`magpie-linux-arm64\` (needs GTK 3 and WebKitGTK 4.1)"
             echo "- **Terminal only:** \`magpie-cli-<os>-<arch>\`"
           } > $RUNNER_TEMP/changelog.md
+          # The English alone goes to Discord; the app asks usemagpie.ai for
+          # the notes in its language, served from below the marker.
+          cp $RUNNER_TEMP/changelog.md $RUNNER_TEMP/changelog-en.md
+
+          ZH=""
+          if [ -n "$DEEPSEEK_API_KEY" ]; then
+            ZPROMPT="Translate the following release notes into Simplified Chinese. Keep the markdown structure, headings, links, code spans and product names (magpie, Claude Code, Codex, ...) as they are. Output ONLY the translation without any preamble.
+
+          $CHANGELOG"
+            ZRESPONSE=$(curl -s --max-time 300 https://api.deepseek.com/chat/completions \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
+              -d "$(jq -n --arg prompt "$ZPROMPT" '{"model": "deepseek-v4-pro", "messages": [{"role": "user", "content": $prompt}]}')") || true
+            ZH=$(echo "$ZRESPONSE" | jq -r '.choices[0].message.content // empty' 2>/dev/null) || ZH=""
+          fi
+          if [ -n "$ZH" ]; then
+            {
+              echo
+              echo "<!-- lang:zh -->"
+              echo
+              echo "$ZH"
+              echo
+              echo "### 安装"
+              echo
+              echo "从 [usemagpie.ai](https://usemagpie.ai) 下载，或运行 \`curl -fsSL https://usemagpie.ai/install.sh | sh\`。已安装的 magpie 会自动更新。"
+            } >> $RUNNER_TEMP/changelog.md
+          else
+            echo "No Chinese notes — the English alone is published."
+          fi
           cat $RUNNER_TEMP/changelog.md
 
       - name: Create Release
@@ -412,7 +441,7 @@ jobs:
           RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
           MESSAGE="## magpie v$VERSION
 
-          $(cat $RUNNER_TEMP/changelog.md)
+          $(cat $RUNNER_TEMP/changelog-en.md)
 
           **Download:** ${RELEASE_URL}"
           if [ ${#MESSAGE} -gt 1990 ]; then
